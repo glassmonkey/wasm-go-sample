@@ -28,13 +28,20 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to instantiate module: %w", err))
 	}
+	call(instance, store, "__main_void")
 
-	runner := instance.GetFunc(store, "__main_void")
+	call(instance, store, "add", 1, 2)
+}
+
+func call(i *wasmtime.Instance, store wasmtime.Storelike, name string, args ...interface{}) {
+	fmt.Printf("call function:%s, args: %v\n", name, args)
+	runner := i.GetFunc(store, name)
 	if runner == nil {
 		log.Fatal(fmt.Errorf("failed to find `run` function"))
 	}
-	_, err = runner.Call(store)
+	got, err := runner.Call(store, args...)
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to call `run`: %w", err))
 	}
+	fmt.Println("result:", got)
 }
